@@ -26,6 +26,24 @@ const UserSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false }
 });
 
+// Hash the password before saving it
+// .methods is allows for operations on individual documents
+UserSchema.methods.hashPassword = function () {
+    this.password = bcrypt.hashSync(this.password, 10); // Salt the hash
+  };
+  
+  // Compare entered password with the stored hashed password
+  UserSchema.methods.comparePassword = function (password) {
+    return bcrypt.compare(password, this.password); 
+  };
+  
+  // Hash the password if it's being created or modified
+  UserSchema.pre("save", function (next) {
+    if (this.isModified("password")) {
+      this.hashPassword();
+    }
+    next();
+  });
 
 const User = mongoose.model("User", UserSchema);
 module.exports = { User };
