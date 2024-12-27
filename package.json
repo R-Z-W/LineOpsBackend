@@ -1,25 +1,28 @@
 {
-  "name": "lineopsbackend",
+  "name": "feb24-t4w2-express-auth",
   "version": "1.0.0",
-  "description": "",
+  "description": "ExpressJS auth with MongooseJS.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/R-Z-W/LineOpsBackend.git"
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/R-Z-W/LineOpsBackend/issues"
-  },
-  "homepage": "https://github.com/R-Z-W/LineOpsBackend#readme",
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "mongoose": "^8.9.2"
+    "dotenv": "^16.4.7",
+    "express": "^4.21.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.2",
+    "mongoose-sequence": "^6.0.1",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }
