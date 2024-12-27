@@ -1,2 +1,0 @@
-# LineOpsBackend
-Backend For LineOps
