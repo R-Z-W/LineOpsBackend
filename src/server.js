@@ -55,3 +55,26 @@ app.post("/signup", async (req, res) => {
 	  },
 	});
 });
+
+// Login Route
+app.post("/api/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      const user = await User.findOne({ username });
+      
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+  
+      const token = generateJWT(user._id, user.username, user.isAdmin);
+      console.log('Generated token for user:', {
+        username: user.username,
+        isAdmin: user.isAdmin
+      });
+      
+      res.json({ token });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
