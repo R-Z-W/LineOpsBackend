@@ -78,3 +78,87 @@ app.post("/api/login", async (req, res) => {
       res.status(500).json({ message: "Login failed" });
     }
   });
+
+
+// User Routes
+app.get("/api/users", validateAdminAuth, async (req, res) => {
+    try {
+      const users = await User.find().select('-password'); // Exclude password
+      res.json(users);
+    } catch (err) {
+      res.status(500).json({ message: "Error fetching users" });
+    }
+  });
+  
+  app.get("/api/users/:id", validateAdminAuth, async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id).select('-password');
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.json(user);
+    } catch (err) {
+      res.status(500).json({ message: "Error fetching user" });
+    }
+  });
+  
+  app.post("/api/users", validateAdminAuth, async (req, res) => {
+    try {
+      // Validate required fields
+      const requiredFields = [
+        'firstName', 'lastName', 'username', 'password',
+        'email', 'phoneNumber', 'jobTitle', 'department',
+        'dateOfBirth', 'gender', 'address', 'salary'
+      ];
+  
+      const missingFields = requiredFields.filter(field => !req.body[field]);
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          message: `Missing required fields: ${missingFields.join(', ')}`
+        });
+      }
+  
+      const userData = {
+        ...req.body,
+        dateOfBirth: new Date(req.body.dateOfBirth),
+        hireDate: new Date(),
+        password: await bcrypt.hash(req.body.password, 10)
+      };
+  
+      const newUser = await User.create(userData);
+      
+      // Remove password from response
+      const userResponse = newUser.toObject();
+      delete userResponse.password;
+      
+      res.status(201).json(userResponse);
+    } catch (err) {
+      console.error('User creation error:', err);
+      res.status(400).json({
+        message: "Error creating user",
+        error: err.message
+      });
+    }
+  });
+  
+  app.put("/api/users/:id", validateAdminAuth, async (req, res) => {
+    try {
+      const updatedUser = await User.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+      ).select('-password');
+      if (!updatedUser) return res.status(404).json({ message: "User not found" });
+      res.json(updatedUser);
+    } catch (err) {
+      res.status(400).json({ message: "Error updating user" });
+    }
+  });
+  
+  app.delete("/api/users/:id", validateAdminAuth, async (req, res) => {
+    try {
+      const deletedUser = await User.findByIdAndDelete(req.params.id);
+      if (!deletedUser) return res.status(404).json({ message: "User not found" });
+      res.json({ message: "User deleted successfully" });
+    } catch (err) {
+      res.status(500).json({ message: "Error deleting user" });
+    }
+  });
