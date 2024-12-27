@@ -165,7 +165,7 @@ app.delete("/api/users/:id", validateAdminAuth, async (req, res) => {
     }
     });
 
-    
+
 // Car Routes
 app.get("/api/cars", validateUserAuth, async (req, res) => {
     try {
@@ -204,3 +204,112 @@ app.post("/api/cars", validateUserAuth, async (req, res) => {
         });
     }
     });
+
+
+// Work Order Routes
+app.get("/api/workorders", validateUserAuth, async (req, res) => {
+    try {
+      const workOrders = await WorkOrder.find();
+      res.json(workOrders);
+    } catch (err) {
+      res.status(500).json({ message: "Error fetching work orders" });
+    }
+  });
+  
+app.get("/api/workorders/:id", validateUserAuth, async (req, res) => {
+    try {
+        const workOrder = await WorkOrder.findById(req.params.id);
+        if (!workOrder) return res.status(404).json({ message: "Work order not found" });
+        res.json(workOrder);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching work order" });
+    }
+    });
+
+app.post("/api/workorders", validateUserAuth, async (req, res) => {
+    try {
+        console.log('Creating work order:', req.body);
+        const newWorkOrder = await WorkOrder.create(req.body);
+        console.log('Created work order:', newWorkOrder);
+        res.status(201).json(newWorkOrder);
+    } catch (err) {
+        console.error('Work order creation error:', err);
+        res.status(400).json({ 
+        message: "Error creating work order",
+        error: err.message 
+        });
+    }
+    });
+
+app.put("/api/workorders/:id", validateUserAuth, async (req, res) => {
+    try {
+        const updatedWorkOrder = await WorkOrder.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+        );
+        if (!updatedWorkOrder) return res.status(404).json({ message: "Work order not found" });
+        res.json(updatedWorkOrder);
+    } catch (err) {
+        res.status(400).json({ message: "Error updating work order" });
+    }
+    });
+
+app.delete("/api/workorders/:id", validateUserAuth, async (req, res) => {
+    try {
+        const deletedWorkOrder = await WorkOrder.findByIdAndDelete(req.params.id);
+        if (!deletedWorkOrder) return res.status(404).json({ message: "Work order not found" });
+        res.json({ message: "Work order deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Error deleting work order" });
+    }
+    });
+  
+// Additional Routes for Work Order
+app.post("/api/workorders/:id/comments", validateUserAuth, async (req, res) => {
+    try {
+        const workOrder = await WorkOrder.findById(req.params.id);
+        if (!workOrder) return res.status(404).json({ message: "Work order not found" });
+        
+        workOrder.comments.push({
+        userId: req.body.userId,
+        text: req.body.text
+        });
+        
+        await workOrder.save();
+        res.status(201).json(workOrder);
+    } catch (err) {
+        res.status(400).json({ message: "Error adding comment" });
+    }
+    });
+
+app.delete("/api/workorders/:workOrderId/comments/:commentId", validateUserAuth, async (req, res) => {
+    try {
+        const workOrder = await WorkOrder.findById(req.params.workOrderId);
+        if (!workOrder) return res.status(404).json({ message: "Work order not found" });
+        
+        workOrder.comments.id(req.params.commentId).remove();
+        await workOrder.save();
+        
+        res.json({ message: "Comment deleted successfully" });
+    } catch (err) {
+        res.status(400).json({ message: "Error deleting comment" });
+    }
+    });
+
+app.put("/api/workorders/:workOrderId/comments/:commentId", validateUserAuth, async (req, res) => {
+    try {
+        const workOrder = await WorkOrder.findById(req.params.workOrderId);
+        if (!workOrder) return res.status(404).json({ message: "Work order not found" });
+        
+        const comment = workOrder.comments.id(req.params.commentId);
+        comment.text = req.body.text;
+        
+        await workOrder.save();
+        res.json(workOrder);
+    } catch (err) {
+        res.status(400).json({ message: "Error updating comment" });
+    }
+    });
+
+module.exports = { app };
