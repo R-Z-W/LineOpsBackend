@@ -312,4 +312,5 @@ app.put("/api/workorders/:workOrderId/comments/:commentId", validateUserAuth, as
     }
     });
 
+// Export app for testing
 module.exports = { app };
